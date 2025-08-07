@@ -3,387 +3,543 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>برنامه حسابداری همکاران (نسخه محلی)</title>
+    <title>مدیریت اشتراک VPN</title>
     
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Persian Date Picker Library -->
+    <link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
     
-    <!-- Persian Datepicker library and its dependency (jQuery) -->
-    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
-    <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+    <!-- Google Fonts - Vazirmatn -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Custom styles for better Persian font rendering */
-        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+        /* --- General Styles & Variables --- */
+        :root {
+            --primary-color: #008B8B; /* Dark Cyan */
+            --secondary-color: #f0f5f5;
+            --light-color: #ffffff;
+            --dark-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --archive-color: #7f8c8d;
+            --shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            --border-radius: 10px;
+        }
+
         body {
             font-family: 'Vazirmatn', sans-serif;
-            background-color: #f3f4f6;
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+            line-height: 1.7;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
-        .main-container {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+        .hidden {
+            display: none !important;
         }
-        .partner-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
+        /* --- Login Screen Styles --- */
+        #login-screen {
+            background-color: var(--light-color);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            width: 100%;
+            max-width: 380px;
         }
-        .partner-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+        #login-screen h2 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
         }
-        .form-input, .form-select {
-            border-radius: 0.5rem;
-            border: 1px solid #d1d5db;
-            padding: 0.75rem 1rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
+
+        #login-screen .form-group {
+            margin-bottom: 20px;
         }
-        .form-input:focus, .form-select:focus {
+
+        #login-screen input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-family: 'Vazirmatn', sans-serif;
+            box-sizing: border-box;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        #login-screen .btn {
+            width: 100%;
+        }
+        
+        #error-message {
+            color: var(--danger-color);
+            margin-top: 15px;
+            font-weight: 500;
+            min-height: 20px;
+        }
+
+
+        /* --- Main App Styles --- */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px;
+            padding: 30px;
+            background: var(--light-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        h1, h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* --- Form Styles --- */
+        #subscriptionForm {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="tel"],
+        input[type="url"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Vazirmatn', sans-serif;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background-color: #fdfdfd;
+        }
+
+        input:focus, select:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 139, 139, 0.15);
         }
+
+        .form-buttons {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+        }
+
         .btn {
-            border-radius: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            font-weight: bold;
-            transition: background-color 0.2s, opacity 0.2s;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            color: var(--light-color);
             cursor: pointer;
+            font-size: 16px;
+            font-family: 'Vazirmatn', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s;
+            flex-grow: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .btn-sm {
-            padding: 0.25rem 0.75rem;
-            font-size: 0.875rem;
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
         }
-        .btn-primary {
-            background-color: #3b82f6;
+
+        .btn-submit { background-color: var(--primary-color); }
+        .btn-toggle-archive { background-color: var(--archive-color); }
+
+        /* --- Table Styles --- */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--dark-color);
+            font-weight: 700;
+            text-align: right;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--secondary-color);
+        }
+        
+        tr:hover {
+            background-color: #e9ecef;
+        }
+        
+        td.link-cell {
+            max-width: 250px;
+            word-wrap: break-word;
+            word-break: break-all;
+            text-align: left;
+            direction: ltr;
+        }
+        
+        td.link-cell a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        td.link-cell a:hover {
+            text-decoration: underline;
+        }
+
+        td.actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            min-width: 200px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
             color: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: transform 0.2s;
         }
-        .btn-primary:hover {
-            background-color: #2563eb;
+        .action-btn:hover {
+            transform: scale(1.05);
         }
-        .btn-secondary {
-            background-color: #6b7280;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background-color: #4b5563;
-        }
-        .btn-info {
-            background-color: #0ea5e9;
-            color: white;
-        }
-        .btn-info:hover {
-            background-color: #0284c7;
-        }
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn-edit { background-color: var(--warning-color); color: var(--dark-color); }
+        .btn-delete { background-color: var(--danger-color); }
+        .btn-archive { background-color: var(--success-color); }
+        .btn-unarchive { background-color: #3498db; }
+
     </style>
 </head>
-<body class="bg-gray-100">
-
-    <div id="app-container" class="main-container">
-        
-        <!-- Main Page: Partner Selection -->
-        <div id="main-page">
-            <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">انتخاب همکار</h1>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div data-name="کاخ موبایل" data-key="kakh_mobile" class="partner-card bg-blue-500 text-white p-8 rounded-lg text-center cursor-pointer"><h2 class="text-2xl font-bold">کاخ موبایل</h2></div>
-                <div data-name="بانک موبایل شهر" data-key="bank_mobile_shahr" class="partner-card bg-green-500 text-white p-8 rounded-lg text-center cursor-pointer"><h2 class="text-2xl font-bold">بانک موبایل شهر</h2></div>
-                <div data-name="سینا موبایل" data-key="sina_mobile" class="partner-card bg-purple-500 text-white p-8 rounded-lg text-center cursor-pointer"><h2 class="text-2xl font-bold">سینا موبایل</h2></div>
+<body>
+    
+    <div id="login-screen">
+        <h2>ورود به پنل مدیریت</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="password" id="password" placeholder="رمز عبور را وارد کنید" required>
             </div>
+            <button type="submit" class="btn btn-submit">ورود</button>
+            <p id="error-message"></p>
+        </form>
+    </div>
+
+    <div class="container hidden" id="main-app">
+        <h1>📝 مدیریت اشتراک VPN</h1>
+        
+        <form id="subscriptionForm">
+            <input type="hidden" id="editId">
+            <div class="form-group">
+                <label for="customerName">نام مشتری</label>
+                <input type="text" id="customerName" required placeholder="مثال: علی رضایی">
+            </div>
+            <div class="form-group">
+                <label for="phoneNumber">شماره تماس</label>
+                <input type="tel" id="phoneNumber" placeholder="مثال: 09123456789">
+            </div>
+            <div class="form-group">
+                <label for="botUsername">نام کاربری در ربات</label>
+                <input type="text" id="botUsername" placeholder="مثال: @username">
+            </div>
+            <div class="form-group">
+                <label for="botName">انتخاب ربات</label>
+                <select id="botName">
+                    <option value="Lemos">Lemos</option>
+                    <option value="Sabz">Sabz</option>
+                </select>
+            </div>
+             <div class="form-group">
+                <label for="subscriptionDate">تاریخ</label>
+                <input type="text" id="subscriptionDate" data-jdp required autocomplete="off" placeholder="تاریخ را انتخاب کنید">
+            </div>
+            <div class="form-group">
+                <label for="subscriptionVolume">حجم اشتراک (GB)</label>
+                <input type="number" id="subscriptionVolume" min="1" placeholder="مثال: 50">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="subscriptionLink">لینک اشتراک</label>
+                <input type="url" id="subscriptionLink" placeholder="لینک کامل را وارد کنید">
+            </div>
+           
+            <div class="form-buttons">
+                 <button type="submit" class="btn btn-submit" id="submitBtn">ثبت اطلاعات</button>
+            </div>
+        </form>
+        
+        <div class="form-buttons" style="margin-top: 20px;">
+            <button class="btn btn-toggle-archive" id="toggleArchiveView">🗄️ مشاهده بایگانی</button>
         </div>
 
-        <!-- Accounting Page: Unsettled View -->
-        <div id="accounting-page" class="hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h1 id="partner-title" class="text-3xl font-bold text-gray-800"></h1>
-                <div class="space-x-2 space-x-reverse">
-                    <button id="view-settled-button" class="btn btn-info">مشاهده تسویه شده‌ها</button>
-                    <button id="back-button" class="btn btn-secondary">بازگشت</button>
-                </div>
-            </div>
-            
-            <form id="accounting-form" class="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-                <div><label for="service-type" class="block mb-2 font-semibold text-gray-700">نوع کار</label><select id="service-type" class="form-select w-full"><option value="Wipe">Wipe</option><option value="FRP">FRP</option><option value="Wipe FRP">Wipe FRP</option><option value="Apple ID">Apple ID</option></select></div>
-                <div><label for="partner-name" class="block mb-2 font-semibold text-gray-700">همکار</label><input type="text" id="partner-name" class="form-input w-full bg-gray-200" readonly></div>
-                <div><label for="phone-model" class="block mb-2 font-semibold text-gray-700">مدل گوشی</label><input type="text" id="phone-model" class="form-input w-full" required></div>
-                <div><label for="record-date" class="block mb-2 font-semibold text-gray-700">تاریخ</label><input type="text" id="record-date" class="form-input w-full" required></div>
-                <div><label for="price" class="block mb-2 font-semibold text-gray-700">قیمت (تومان)</label><input type="number" id="price" class="form-input w-full" required></div>
-                <div class="md:col-span-2 lg:col-span-1"><button type="submit" class="btn btn-primary w-full">ثبت رکورد</button></div>
-            </form>
 
-            <div id="total-sum-container" class="bg-red-100 border-l-4 border-red-500 text-red-800 p-4 rounded-lg mb-6" role="alert"><p class="font-bold text-lg">مجموع حساب تسویه نشده: <span id="total-sum">0</span> تومان</p></div>
-            
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">سوابق تسویه نشده</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white rounded-lg shadow overflow-hidden">
-                    <thead class="bg-gray-800 text-white"><tr><th class="py-3 px-4 text-right">نوع کار</th><th class="py-3 px-4 text-right">مدل گوشی</th><th class="py-3 px-4 text-right">تاریخ</th><th class="py-3 px-4 text-right">قیمت (تومان)</th><th class="py-3 px-4 text-center">عملیات</th></tr></thead>
-                    <tbody id="records-table-body" class="text-gray-700"></tbody>
+        <div id="activeSubscriptions">
+            <h2>لیست اشتراک‌های فعال</h2>
+            <div class="table-container">
+                <table id="activeTable">
+                    <thead>
+                        <tr>
+                            <th>نام مشتری</th>
+                            <th>شماره تماس</th>
+                            <th>ربات</th>
+                            <th>تاریخ</th>
+                            <th>حجم (GB)</th>
+                            <th>لینک</th>
+                            <th style="text-align: center;">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activeBody"></tbody>
                 </table>
             </div>
-            <div class="mt-6 text-center"><button id="copy-button" class="btn bg-indigo-600 text-white hover:bg-indigo-700">کپی گزارش تسویه نشده</button></div>
         </div>
         
-        <!-- Settled Records Page -->
-        <div id="settled-page" class="hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h1 id="settled-partner-title" class="text-3xl font-bold text-gray-800"></h1>
-                <button id="back-to-unsettled-button" class="btn btn-secondary">بازگشت به حسابداری</button>
-            </div>
-            
-            <div id="settled-sum-container" class="bg-green-100 border-l-4 border-green-500 text-green-800 p-4 rounded-lg mb-6" role="alert"><p class="font-bold text-lg">مجموع حساب تسویه شده: <span id="settled-sum">0</span> تومان</p></div>
-
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">سوابق تسویه شده</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white rounded-lg shadow overflow-hidden">
-                    <thead class="bg-gray-600 text-white"><tr><th class="py-3 px-4 text-right">نوع کار</th><th class="py-3 px-4 text-right">مدل گوشی</th><th class="py-3 px-4 text-right">تاریخ</th><th class="py-3 px-4 text-right">قیمت (تومان)</th><th class="py-3 px-4 text-center">عملیات</th></tr></thead>
-                    <tbody id="settled-records-table-body" class="text-gray-700"></tbody>
+        <div id="archivedSubscriptions" class="hidden">
+            <h2>لیست بایگانی</h2>
+            <div class="table-container">
+                <table id="archivedTable">
+                     <thead>
+                        <tr>
+                            <th>نام مشتری</th>
+                            <th>شماره تماس</th>
+                            <th>ربات</th>
+                            <th>تاریخ</th>
+                            <th>حجم (GB)</th>
+                            <th>لینک</th>
+                            <th style="text-align: center;">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="archivedBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- Jalali Date Picker Script -->
+    <script src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
     <script>
-    $(document).ready(function() {
-        let currentPartnerKey = null;
-        let currentPartnerName = '';
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- LOGIN LOGIC ---
+            const loginScreen = document.getElementById('login-screen');
+            const mainApp = document.getElementById('main-app');
+            const loginForm = document.getElementById('loginForm');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('error-message');
 
-        const mainPage = $('#main-page');
-        const accountingPage = $('#accounting-page');
-        const settledPage = $('#settled-page');
-
-        const partnerTitle = $('#partner-title');
-        const settledPartnerTitle = $('#settled-partner-title');
-        const form = $('#accounting-form');
-        const partnerNameInput = $('#partner-name');
-        const recordsTableBody = $('#records-table-body');
-        const settledRecordsTableBody = $('#settled-records-table-body');
-        const dateInput = $('#record-date');
-        const totalSumEl = $('#total-sum');
-        const settledSumEl = $('#settled-sum');
-        const copyButton = $('#copy-button');
-
-        // --- UI Initialization ---
-        dateInput.persianDatepicker({
-            format: 'YYYY/MM/DD',
-            autoClose: true,
-            initialValue: false,
-            observer: true,
-            initialValueType: 'persian'
-        });
-
-        // --- Page Navigation ---
-        function showAccountingPage(name, key) {
-            currentPartnerKey = key;
-            currentPartnerName = name;
-            mainPage.addClass('hidden');
-            accountingPage.removeClass('hidden');
-            settledPage.addClass('hidden');
-            partnerTitle.text(`حسابداری: ${name}`);
-            partnerNameInput.val(name);
-            dateInput.persianDatepicker('setDate', new persianDate());
-            renderAll();
-        }
-
-        function showMainPage() {
-            currentPartnerKey = null;
-            currentPartnerName = '';
-            mainPage.removeClass('hidden');
-            accountingPage.addClass('hidden');
-            settledPage.addClass('hidden');
-        }
-        
-        function showSettledPage() {
-            accountingPage.addClass('hidden');
-            settledPage.removeClass('hidden');
-            settledPartnerTitle.text(`تسویه شده‌های: ${currentPartnerName}`);
-            renderAll(); // Re-render to ensure data is fresh
-        }
-
-        // --- Data Handling (localStorage) ---
-        function getRecords() {
-            if (!currentPartnerKey) return [];
-            const recordsJSON = localStorage.getItem(currentPartnerKey);
-            return recordsJSON ? JSON.parse(recordsJSON) : [];
-        }
-
-        function saveRecords(records) {
-            if (!currentPartnerKey) return;
-            localStorage.setItem(currentPartnerKey, JSON.stringify(records));
-        }
-
-        function addRecord(record) {
-            const records = getRecords();
-            record.id = 'id_' + new Date().getTime();
-            records.push(record);
-            saveRecords(records);
-        }
-
-        window.deleteRecord = function(recordId) {
-            if (!confirm('آیا از حذف این رکورد مطمئن هستید؟')) return;
-            let records = getRecords();
-            const updatedRecords = records.filter(r => r.id !== recordId);
-            saveRecords(updatedRecords);
-            renderAll();
-        }
-        
-        window.settleRecord = function(recordId) {
-            let records = getRecords();
-            const recordIndex = records.findIndex(r => r.id === recordId);
-            if (recordIndex > -1) {
-                records[recordIndex].isSettled = true;
-                saveRecords(records);
-                renderAll();
-            }
-        }
-
-        window.unsettleRecord = function(recordId) {
-            let records = getRecords();
-            const recordIndex = records.findIndex(r => r.id === recordId);
-            if (recordIndex > -1) {
-                records[recordIndex].isSettled = false;
-                saveRecords(records);
-                renderAll();
-            }
-        }
-
-        // --- Rendering Logic ---
-        function renderAll() {
-            const allRecords = getRecords();
-            const unsettledRecords = allRecords.filter(r => !r.isSettled);
-            const settledRecords = allRecords.filter(r => r.isSettled);
-            renderUnsettledTable(unsettledRecords);
-            renderSettledTable(settledRecords);
-        }
-
-        function renderUnsettledTable(unsettled) {
-            recordsTableBody.empty();
-            const unsettledSum = unsettled.reduce((sum, record) => sum + Number(record.price || 0), 0);
-            totalSumEl.text(unsettledSum.toLocaleString('fa-IR'));
-            copyButton.prop('disabled', unsettled.length === 0);
-
-            if (unsettled.length === 0) {
-                recordsTableBody.append('<tr><td colspan="5" class="text-center p-6 text-gray-500">هیچ رکوردی برای تسویه وجود ندارد.</td></tr>');
-            } else {
-                 unsettled.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                 unsettled.forEach(record => {
-                    const formattedPrice = Number(record.price).toLocaleString('fa-IR');
-                    const row = `
-                        <tr class="border-b hover:bg-gray-100">
-                            <td class="py-3 px-4">${record.service}</td>
-                            <td class="py-3 px-4">${record.model}</td>
-                            <td class="py-3 px-4">${record.date}</td>
-                            <td class="py-3 px-4">${formattedPrice}</td>
-                            <td class="py-3 px-4 text-center space-x-2 space-x-reverse">
-                                <button onclick="window.settleRecord('${record.id}')" class="btn btn-sm bg-green-500 text-white hover:bg-green-600">تسویه شد</button>
-                                <button onclick="window.deleteRecord('${record.id}')" class="btn btn-sm bg-red-500 text-white hover:bg-red-600">حذف</button>
-                            </td>
-                        </tr>`;
-                    recordsTableBody.append(row);
-                });
-            }
-        }
-
-        function renderSettledTable(settled) {
-            settledRecordsTableBody.empty();
-            const settledSum = settled.reduce((sum, record) => sum + Number(record.price || 0), 0);
-            settledSumEl.text(settledSum.toLocaleString('fa-IR'));
-            
-            if (settled.length === 0) {
-                settledRecordsTableBody.append('<tr><td colspan="5" class="text-center p-6 text-gray-500">هیچ رکوردی تسویه نشده است.</td></tr>');
-            } else {
-                settled.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                settled.forEach(record => {
-                    const formattedPrice = Number(record.price).toLocaleString('fa-IR');
-                    const row = `
-                        <tr class="border-b hover:bg-gray-50 bg-green-50">
-                            <td class="py-3 px-4">${record.service}</td>
-                            <td class="py-3 px-4">${record.model}</td>
-                            <td class="py-3 px-4">${record.date}</td>
-                            <td class="py-3 px-4">${formattedPrice}</td>
-                            <td class="py-3 px-4 text-center space-x-2 space-x-reverse">
-                                <button onclick="window.unsettleRecord('${record.id}')" class="btn btn-sm bg-yellow-500 text-white hover:bg-yellow-600">لغو تسویه</button>
-                                <button onclick="window.deleteRecord('${record.id}')" class="btn btn-sm bg-red-500 text-white hover:bg-red-600">حذف</button>
-                            </td>
-                        </tr>`;
-                    settledRecordsTableBody.append(row);
-                });
-            }
-        }
-
-        // --- Event Handlers ---
-        $('.partner-card').on('click', function() {
-            showAccountingPage($(this).data('name'), $(this).data('key'));
-        });
-
-        $('#back-button').on('click', showMainPage);
-        $('#view-settled-button').on('click', showSettledPage);
-        $('#back-to-unsettled-button').on('click', function() {
-            showAccountingPage(currentPartnerName, currentPartnerKey);
-        });
-
-        form.on('submit', function(e) {
-            e.preventDefault();
-            const newRecord = {
-                service: $('#service-type').val(),
-                model: $('#phone-model').val(),
-                date: dateInput.val(),
-                price: $('#price').val(),
-                createdAt: new Date().toISOString(),
-                isSettled: false
-            };
-            addRecord(newRecord);
-            renderAll();
-            this.reset();
-            dateInput.persianDatepicker('setDate', new persianDate());
-        });
-
-        copyButton.on('click', function() {
-            const partnerName = partnerNameInput.val();
-            let reportText = `گزارش حساب های تسویه نشده: ${partnerName}\n\n`;
-            let totalSum = 0;
-
-            getRecords().filter(r => !r.isSettled).forEach(record => {
-                const formattedPrice = Number(record.price).toLocaleString('fa-IR');
-                totalSum += Number(record.price);
-                reportText += `- کار: ${record.service}, مدل: ${record.model}, تاریخ: ${record.date}, قیمت: ${formattedPrice} تومان\n`;
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (passwordInput.value === '4006') {
+                    loginScreen.classList.add('hidden');
+                    mainApp.classList.remove('hidden');
+                    initializeApp();
+                } else {
+                    errorMessage.textContent = 'رمز عبور اشتباه است!';
+                    passwordInput.value = '';
+                }
             });
-            
-            if (totalSum === 0) {
-                reportText += "هیچ حساب تسویه نشده ای وجود ندارد.";
-            }
 
-            reportText += `\n--------------------\n`;
-            reportText += `مجموع کل تسویه نشده: ${totalSum.toLocaleString('fa-IR')} تومان`;
 
-            const textArea = document.createElement("textarea");
-            textArea.value = reportText;
-            textArea.style.position = "fixed";
-            textArea.style.top = "0";
-            textArea.style.left = "0";
-            textArea.style.opacity = "0";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                const originalText = copyButton.text();
-                copyButton.text('کپی شد!').prop('disabled', true);
-                setTimeout(() => {
-                    copyButton.text(originalText).prop('disabled', false);
-                }, 2000);
-            } catch (err) {
-                console.error('خطا در کپی کردن متن: ', err);
+            // --- MAIN APP LOGIC ---
+            function initializeApp() {
+                // Initialize Date Picker
+                jalaliDatepicker.startWatch({
+                    time: false,
+                    todayButton: true,
+                    gotoToday: true,
+                    init: true 
+                });
+
+                // DOM Elements
+                const form = document.getElementById('subscriptionForm');
+                const submitBtn = document.getElementById('submitBtn');
+                const editIdInput = document.getElementById('editId');
+                const toggleArchiveViewBtn = document.getElementById('toggleArchiveView');
+                const activeBody = document.getElementById('activeBody');
+                const archivedBody = document.getElementById('archivedBody');
+                const activeContainer = document.getElementById('activeSubscriptions');
+                const archivedContainer = document.getElementById('archivedSubscriptions');
+                
+                // Data Arrays from Local Storage
+                let subscriptions = JSON.parse(localStorage.getItem('vpn_subscriptions_active')) || [];
+                let archived = JSON.parse(localStorage.getItem('vpn_subscriptions_archived')) || [];
+
+                // Render initial data
+                renderTables();
+
+                // Form submission logic
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const subscriptionData = {
+                        customerName: document.getElementById('customerName').value.trim(),
+                        phoneNumber: document.getElementById('phoneNumber').value.trim(),
+                        botUsername: document.getElementById('botUsername').value.trim(),
+                        botName: document.getElementById('botName').value,
+                        subscriptionDate: document.getElementById('subscriptionDate').value,
+                        subscriptionLink: document.getElementById('subscriptionLink').value.trim(),
+                        subscriptionVolume: document.getElementById('subscriptionVolume').value,
+                    };
+
+                    const editId = editIdInput.value;
+                    if (editId) { // Update existing subscription
+                        const index = subscriptions.findIndex(sub => sub.id == editId);
+                        if (index !== -1) {
+                            subscriptions[index] = { ...subscriptions[index], ...subscriptionData };
+                        }
+                        submitBtn.textContent = 'ثبت اطلاعات';
+                        submitBtn.style.backgroundColor = 'var(--primary-color)';
+                        editIdInput.value = '';
+                    } else { // Create new subscription
+                        subscriptionData.id = Date.now(); // Unique ID
+                        subscriptions.push(subscriptionData);
+                    }
+                    
+                    saveAndRender();
+                    form.reset();
+                    jalaliDatepicker.updateOptions({init: true});
+                });
+
+                // Toggle archive view visibility
+                toggleArchiveViewBtn.addEventListener('click', () => {
+                    const isHidden = archivedContainer.classList.toggle('hidden');
+                    activeContainer.classList.toggle('hidden');
+                    toggleArchiveViewBtn.textContent = isHidden ? '🗄️ مشاهده بایگانی' : '✅ مشاهده لیست فعال';
+                });
+
+                // Handle all actions using event delegation
+                document.body.addEventListener('click', (e) => {
+                    const target = e.target.closest('.action-btn');
+                    if (!target) return;
+
+                    const id = target.dataset.id;
+                    
+                    if (target.classList.contains('edit-btn')) handleEdit(id);
+                    else if (target.classList.contains('delete-btn')) handleDelete(id, target.dataset.list);
+                    else if (target.classList.contains('archive-btn')) handleArchive(id);
+                    else if (target.classList.contains('unarchive-btn')) handleUnarchive(id);
+                });
+
+                function handleEdit(id) {
+                    const sub = subscriptions.find(s => s.id == id);
+                    if (!sub) return;
+
+                    document.getElementById('customerName').value = sub.customerName;
+                    document.getElementById('phoneNumber').value = sub.phoneNumber;
+                    document.getElementById('botUsername').value = sub.botUsername;
+                    document.getElementById('botName').value = sub.botName;
+                    document.getElementById('subscriptionDate').value = sub.subscriptionDate;
+                    document.getElementById('subscriptionLink').value = sub.subscriptionLink;
+                    document.getElementById('subscriptionVolume').value = sub.subscriptionVolume;
+                    
+                    editIdInput.value = id;
+                    submitBtn.textContent = 'بروزرسانی اطلاعات';
+                    submitBtn.style.backgroundColor = 'var(--warning-color)';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    document.getElementById('customerName').focus();
+                }
+
+                function handleDelete(id, listType) {
+                    if (confirm('آیا از حذف این اشتراک اطمینان دارید؟ این عمل غیرقابل بازگشت است.')) {
+                        if (listType === 'active') {
+                            subscriptions = subscriptions.filter(s => s.id != id);
+                        } else if (listType === 'archived') {
+                            archived = archived.filter(s => s.id != id);
+                        }
+                        saveAndRender();
+                    }
+                }
+
+                function handleArchive(id) {
+                    const index = subscriptions.findIndex(s => s.id == id);
+                    if (index > -1) {
+                        const [item] = subscriptions.splice(index, 1);
+                        archived.push(item);
+                        saveAndRender();
+                    }
+                }
+
+                function handleUnarchive(id) {
+                    const index = archived.findIndex(s => s.id == id);
+                    if (index > -1) {
+                        const [item] = archived.splice(index, 1);
+                        subscriptions.push(item);
+                        saveAndRender();
+                    }
+                }
+
+                function saveAndRender() {
+                    localStorage.setItem('vpn_subscriptions_active', JSON.stringify(subscriptions));
+                    localStorage.setItem('vpn_subscriptions_archived', JSON.stringify(archived));
+                    renderTables();
+                }
+
+                function renderTables() {
+                    activeBody.innerHTML = subscriptions.map(sub => createRow(sub, 'active')).join('');
+                    archivedBody.innerHTML = archived.map(sub => createRow(sub, 'archived')).join('');
+                }
+
+                function createRow(sub, type) {
+                    const archiveButtons = type === 'active' 
+                        ? `<button class="action-btn btn-archive" data-id="${sub.id}">بایگانی</button>`
+                        : `<button class="action-btn btn-unarchive" data-id="${sub.id}">بازگردانی</button>`;
+                    
+                    const editButton = type === 'active'
+                        ? `<button class="action-btn btn-edit" data-id="${sub.id}">ویرایش</button>`
+                        : '';
+
+                    return `
+                        <tr>
+                            <td>${sub.customerName || '-'}</td>
+                            <td>${sub.phoneNumber || '-'}</td>
+                            <td>${sub.botName || '-'}</td>
+                            <td>${sub.subscriptionDate || '-'}</td>
+                            <td>${sub.subscriptionVolume ? sub.subscriptionVolume + ' GB' : '-'}</td>
+                            <td class="link-cell">${sub.subscriptionLink ? `<a href="${sub.subscriptionLink}" target="_blank" rel="noopener noreferrer">${sub.subscriptionLink}</a>` : '-'}</td>
+                            <td class="actions">
+                                ${editButton}
+                                <button class="action-btn btn-delete" data-id="${sub.id}" data-list="${type}">حذف</button>
+                                ${archiveButtons}
+                            </td>
+                        </tr>
+                    `;
+                }
             }
-            document.body.removeChild(textArea);
         });
-    });
     </script>
+
 </body>
 </html>
