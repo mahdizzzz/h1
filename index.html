@@ -22,6 +22,7 @@
             --warning-color: #f39c12;
             --danger-color: #e74c3c;
             --archive-color: #7f8c8d;
+            --info-color: #3498db;
             --shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
             --border-radius: 10px;
         }
@@ -146,6 +147,7 @@
             grid-column: 1 / -1;
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -169,6 +171,20 @@
 
         .btn-submit { background-color: var(--primary-color); }
         .btn-toggle-archive { background-color: var(--archive-color); }
+        .btn-export { background-color: var(--success-color); }
+        .btn-import { background-color: var(--info-color); }
+
+        /* --- Toolbar/Sort Styles --- */
+        .toolbar {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .toolbar .form-group {
+            max-width: 250px;
+        }
 
         /* --- Table Styles --- */
         .table-container {
@@ -244,7 +260,7 @@
         .btn-edit { background-color: var(--warning-color); color: var(--dark-color); }
         .btn-delete { background-color: var(--danger-color); }
         .btn-archive { background-color: var(--success-color); }
-        .btn-unarchive { background-color: #3498db; }
+        .btn-unarchive { background-color: var(--info-color); }
 
     </style>
 </head>
@@ -305,8 +321,22 @@
         
         <div class="form-buttons" style="margin-top: 20px;">
             <button class="btn btn-toggle-archive" id="toggleArchiveView">🗄️ مشاهده بایگانی</button>
+            <button class="btn btn-export" id="exportBtn">خروجی گرفتن (Export)</button>
+            <button class="btn btn-import" id="importBtn">ورود اطلاعات (Import)</button>
+            <input type="file" id="importFile" class="hidden" accept=".json">
         </div>
 
+        <div class="toolbar">
+            <div class="form-group">
+                <label for="sortOptions">مرتب‌سازی بر اساس</label>
+                <select id="sortOptions">
+                    <option value="id-desc">تاریخ ثبت (جدیدترین)</option>
+                    <option value="id-asc">تاریخ ثبت (قدیمی‌ترین)</option>
+                    <option value="date-desc">تاریخ اشتراک (جدیدترین)</option>
+                    <option value="date-asc">تاریخ اشتراک (قدیمی‌ترین)</option>
+                </select>
+            </div>
+        </div>
 
         <div id="activeSubscriptions">
             <h2>لیست اشتراک‌های فعال</h2>
@@ -388,19 +418,32 @@
                 const submitBtn = document.getElementById('submitBtn');
                 const editIdInput = document.getElementById('editId');
                 const toggleArchiveViewBtn = document.getElementById('toggleArchiveView');
+                const exportBtn = document.getElementById('exportBtn');
+                const importBtn = document.getElementById('importBtn');
+                const importFileInput = document.getElementById('importFile');
                 const activeBody = document.getElementById('activeBody');
                 const archivedBody = document.getElementById('archivedBody');
                 const activeContainer = document.getElementById('activeSubscriptions');
                 const archivedContainer = document.getElementById('archivedSubscriptions');
+                const sortOptions = document.getElementById('sortOptions');
                 
-                // Data Arrays from Local Storage
+                // Data and State
                 let subscriptions = JSON.parse(localStorage.getItem('vpn_subscriptions_active')) || [];
                 let archived = JSON.parse(localStorage.getItem('vpn_subscriptions_archived')) || [];
+                let currentSort = 'id-desc'; // Default sort
 
                 // Render initial data
                 renderTables();
 
-                // Form submission logic
+                // --- EVENT LISTENERS ---
+
+                // Sort options change
+                sortOptions.addEventListener('change', (e) => {
+                    currentSort = e.target.value;
+                    renderTables();
+                });
+
+                // Form submission
                 form.addEventListener('submit', (e) => {
                     e.preventDefault();
                     
@@ -415,7 +458,7 @@
                     };
 
                     const editId = editIdInput.value;
-                    if (editId) { // Update existing subscription
+                    if (editId) { // Update
                         const index = subscriptions.findIndex(sub => sub.id == editId);
                         if (index !== -1) {
                             subscriptions[index] = { ...subscriptions[index], ...subscriptionData };
@@ -423,8 +466,8 @@
                         submitBtn.textContent = 'ثبت اطلاعات';
                         submitBtn.style.backgroundColor = 'var(--primary-color)';
                         editIdInput.value = '';
-                    } else { // Create new subscription
-                        subscriptionData.id = Date.now(); // Unique ID
+                    } else { // Create
+                        subscriptionData.id = Date.now();
                         subscriptions.push(subscriptionData);
                     }
                     
@@ -433,14 +476,67 @@
                     jalaliDatepicker.updateOptions({init: true});
                 });
 
-                // Toggle archive view visibility
+                // Toggle archive view
                 toggleArchiveViewBtn.addEventListener('click', () => {
                     const isHidden = archivedContainer.classList.toggle('hidden');
                     activeContainer.classList.toggle('hidden');
                     toggleArchiveViewBtn.textContent = isHidden ? '🗄️ مشاهده بایگانی' : '✅ مشاهده لیست فعال';
                 });
 
-                // Handle all actions using event delegation
+                // Export Button
+                exportBtn.addEventListener('click', () => {
+                    const dataToExport = {
+                        active: subscriptions,
+                        archived: archived
+                    };
+                    const dataStr = JSON.stringify(dataToExport, null, 2);
+                    const dataBlob = new Blob([dataStr], {type: "application/json"});
+                    const url = URL.createObjectURL(dataBlob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = url;
+                    const today = new Date().toISOString().slice(0, 10);
+                    downloadLink.download = `vpn_backup_${today}.json`;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    URL.revokeObjectURL(url);
+                });
+
+                // Import Button
+                importBtn.addEventListener('click', () => {
+                    importFileInput.click();
+                });
+
+                importFileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const importedData = JSON.parse(event.target.result);
+                            if (Array.isArray(importedData.active) && Array.isArray(importedData.archived)) {
+                                if (confirm('آیا از جایگزینی تمام اطلاعات فعلی با اطلاعات جدید اطمینان دارید؟ این عمل غیرقابل بازگشت است.')) {
+                                    subscriptions = importedData.active;
+                                    archived = importedData.archived;
+                                    saveAndRender();
+                                    alert('اطلاعات با موفقیت وارد شد.');
+                                }
+                            } else {
+                                alert('فرمت فایل ورودی صحیح نیست.');
+                            }
+                        } catch (error) {
+                            alert('خطا در خواندن فایل. لطفاً از یک فایل پشتیبان صحیح استفاده کنید.');
+                            console.error("Import error:", error);
+                        } finally {
+                            // Reset file input to allow importing the same file again
+                            importFileInput.value = '';
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+
+                // Actions (Edit, Delete, Archive) via Event Delegation
                 document.body.addEventListener('click', (e) => {
                     const target = e.target.closest('.action-btn');
                     if (!target) return;
@@ -452,6 +548,8 @@
                     else if (target.classList.contains('archive-btn')) handleArchive(id);
                     else if (target.classList.contains('unarchive-btn')) handleUnarchive(id);
                 });
+
+                // --- FUNCTIONS ---
 
                 function handleEdit(id) {
                     const sub = subscriptions.find(s => s.id == id);
@@ -508,8 +606,31 @@
                 }
 
                 function renderTables() {
-                    activeBody.innerHTML = subscriptions.map(sub => createRow(sub, 'active')).join('');
-                    archivedBody.innerHTML = archived.map(sub => createRow(sub, 'archived')).join('');
+                    const sortArray = (arr, sortType) => {
+                        const sorted = [...arr]; // Create a copy to not mutate the original
+                        switch (sortType) {
+                            case 'id-asc':
+                                sorted.sort((a, b) => a.id - b.id);
+                                break;
+                            case 'date-desc':
+                                sorted.sort((a, b) => (b.subscriptionDate || '').localeCompare(a.subscriptionDate || ''));
+                                break;
+                            case 'date-asc':
+                                sorted.sort((a, b) => (a.subscriptionDate || '').localeCompare(b.subscriptionDate || ''));
+                                break;
+                            case 'id-desc':
+                            default:
+                                sorted.sort((a, b) => b.id - a.id);
+                                break;
+                        }
+                        return sorted;
+                    };
+
+                    const sortedSubscriptions = sortArray(subscriptions, currentSort);
+                    const sortedArchived = sortArray(archived, currentSort);
+
+                    activeBody.innerHTML = sortedSubscriptions.map(sub => createRow(sub, 'active')).join('');
+                    archivedBody.innerHTML = sortedArchived.map(sub => createRow(sub, 'archived')).join('');
                 }
 
                 function createRow(sub, type) {
