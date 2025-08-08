@@ -175,6 +175,12 @@
             margin-bottom: 15px;
             resize: vertical;
         }
+        #app-loader {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -185,8 +191,14 @@
     </div>
 
     <div class="container hidden" id="main-app">
-        <!-- Main app structure remains the same -->
-        <div class="header-controls"><h1>📝 مدیریت اشتراک VPN</h1><button id="logout-btn" class="btn btn-logout">خروج</button></div><form id="subscriptionForm"><input type="hidden" id="editId"><div class="form-group"><label for="customerName">نام مشتری</label><input type="text" id="customerName" required></div><div class="form-group"><label for="phoneNumber">شماره تماس</label><input type="tel" id="phoneNumber"></div><div class="form-group"><label for="botUsername">نام کاربری در ربات</label><input type="text" id="botUsername"></div><div class="form-group"><label for="botName">انتخاب ربات</label><select id="botName"><option value="Lemos">Lemos</option><option value="Sabz">Sabz</option></select></div><div class="form-group"><label for="subscriptionDate">تاریخ</label><input type="text" id="subscriptionDate" data-jdp required autocomplete="off"></div><div class="form-group"><label for="subscriptionVolume">حجم اشتراک (GB)</label><input type="number" id="subscriptionVolume" min="1"></div><div class="form-group" style="grid-column: 1 / -1;"><label for="subscriptionLink">لینک اشتراک</label><input type="url" id="subscriptionLink"></div><div class="form-buttons"><button type="submit" class="btn btn-submit" id="submitBtn">ثبت اطلاعات</button></div></form><div class="form-buttons" style="margin-top: 20px; justify-content: center;"><button class="btn btn-secondary" id="toggleArchiveView">🗄️ مشاهده بایگانی</button></div><div class="toolbar"><div class="form-group"><label for="sortOptions">مرتب‌سازی</label><select id="sortOptions"><option value="createdAt-desc">جدیدترین ثبت</option><option value="createdAt-asc">قدیمی‌ترین ثبت</option><option value="date-desc">جدیدترین اشتراک</option><option value="date-asc">قدیمی‌ترین اشتراک</option></select></div></div><div id="activeSubscriptions"><h2>لیست اشتراک‌های فعال</h2><div class="table-container"><table id="activeTable"><thead><tr><th>نام مشتری</th><th>شماره تماس</th><th>ربات</th><th>تاریخ</th><th>حجم (GB)</th><th>لینک</th><th style="text-align: center;">عملیات</th></tr></thead><tbody id="activeBody"></tbody></table></div></div><div id="archivedSubscriptions" class="hidden"><h2>لیست بایگانی</h2><div class="table-container"><table id="archivedTable"><thead><tr><th>نام مشتری</th><th>شماره تماس</th><th>ربات</th><th>تاریخ</th><th>حجم (GB)</th><th>لینک</th><th style="text-align: center;">عملیات</th></tr></thead><tbody id="archivedBody"></tbody></table></div></div>
+        <div id="app-loader">
+            <p>در حال بارگذاری اطلاعات...</p>
+        </div>
+
+        <div id="app-content" class="hidden">
+            <!-- Main app structure remains the same -->
+            <div class="header-controls"><h1>📝 مدیریت اشتراک VPN</h1><button id="logout-btn" class="btn btn-logout">خروج</button></div><form id="subscriptionForm"><input type="hidden" id="editId"><div class="form-group"><label for="customerName">نام مشتری</label><input type="text" id="customerName" required></div><div class="form-group"><label for="phoneNumber">شماره تماس</label><input type="tel" id="phoneNumber"></div><div class="form-group"><label for="botUsername">نام کاربری در ربات</label><input type="text" id="botUsername"></div><div class="form-group"><label for="botName">انتخاب ربات</label><select id="botName"><option value="Lemos">Lemos</option><option value="Sabz">Sabz</option></select></div><div class="form-group"><label for="subscriptionDate">تاریخ</label><input type="text" id="subscriptionDate" data-jdp required autocomplete="off"></div><div class="form-group"><label for="subscriptionVolume">حجم اشتراک (GB)</label><input type="number" id="subscriptionVolume" min="1"></div><div class="form-group" style="grid-column: 1 / -1;"><label for="subscriptionLink">لینک اشتراک</label><input type="url" id="subscriptionLink"></div><div class="form-buttons"><button type="submit" class="btn btn-submit" id="submitBtn">ثبت اطلاعات</button></div></form><div class="form-buttons" style="margin-top: 20px; justify-content: center;"><button class="btn btn-secondary" id="toggleArchiveView">🗄️ مشاهده بایگانی</button></div><div class="toolbar"><div class="form-group"><label for="sortOptions">مرتب‌سازی</label><select id="sortOptions"><option value="createdAt-desc">جدیدترین ثبت</option><option value="createdAt-asc">قدیمی‌ترین ثبت</option><option value="date-desc">جدیدترین اشتراک</option><option value="date-asc">قدیمی‌ترین اشتراک</option></select></div></div><div id="activeSubscriptions"><h2>لیست اشتراک‌های فعال</h2><div class="table-container"><table id="activeTable"><thead><tr><th>نام مشتری</th><th>شماره تماس</th><th>ربات</th><th>تاریخ</th><th>حجم (GB)</th><th>لینک</th><th style="text-align: center;">عملیات</th></tr></thead><tbody id="activeBody"></tbody></table></div></div><div id="archivedSubscriptions" class="hidden"><h2>لیست بایگانی</h2><div class="table-container"><table id="archivedTable"><thead><tr><th>نام مشتری</th><th>شماره تماس</th><th>ربات</th><th>تاریخ</th><th>حجم (GB)</th><th>لینک</th><th style="text-align: center;">عملیات</th></tr></thead><tbody id="archivedBody"></tbody></table></div></div>
+        </div>
     </div>
 
     <!-- Gemini Modal -->
@@ -242,6 +254,8 @@
         // --- DOM Elements ---
         const authContainer = document.getElementById('auth-container');
         const mainApp = document.getElementById('main-app');
+        const appLoader = document.getElementById('app-loader');
+        const appContent = document.getElementById('app-content');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const showLoginLink = document.getElementById('show-login');
@@ -271,6 +285,9 @@
 
         // --- MAIN APP LOGIC ---
         function initializeApp(user) {
+            appLoader.classList.remove('hidden');
+            appContent.classList.add('hidden');
+            
             jalaliDatepicker.startWatch({ time: false, todayButton: true, gotoToday: true });
 
             const form = document.getElementById('subscriptionForm');
@@ -289,9 +306,19 @@
             
             const subscriptionsRef = db.collection('users').doc(user.uid).collection('subscriptions');
             const archivedRef = db.collection('users').doc(user.uid).collection('archived');
+            
+            let activeLoaded = false;
+            let archivedLoaded = false;
 
-            subscriptionsRef.onSnapshot(snapshot => { subscriptions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderTables(); }, error => console.error("Error listening to active subscriptions: ", error));
-            archivedRef.onSnapshot(snapshot => { archived = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderTables(); }, error => console.error("Error listening to archived subscriptions: ", error));
+            const showAppContent = () => {
+                if(activeLoaded && archivedLoaded) {
+                    appLoader.classList.add('hidden');
+                    appContent.classList.remove('hidden');
+                }
+            }
+
+            subscriptionsRef.onSnapshot(snapshot => { subscriptions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); activeLoaded = true; showAppContent(); renderTables(); }, error => console.error("Error listening to active subscriptions: ", error));
+            archivedRef.onSnapshot(snapshot => { archived = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); archivedLoaded = true; showAppContent(); renderTables(); }, error => console.error("Error listening to archived subscriptions: ", error));
 
             sortOptions.addEventListener('change', (e) => { currentSort = e.target.value; renderTables(); });
 
