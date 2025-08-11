@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مدیریت اشتراک VPN (آنلاین)</title>
+    <title>مدیریت اشتراک VPN (آفلاین)</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -19,7 +19,6 @@
             --danger-color: #e74c3c;
             --archive-color: #7f8c8d;
             --info-color: #3498db;
-            --gemini-color: #9b59b6; /* Purple for Gemini feature */
             --shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
             --border-radius: 10px;
         }
@@ -27,6 +26,7 @@
             font-family: 'Vazirmatn', sans-serif;
             background-color: var(--secondary-color);
             color: var(--dark-color);
+            line-height: 1.7;
             margin: 0;
             display: flex;
             align-items: center;
@@ -34,33 +34,28 @@
             min-height: 100vh;
         }
         .hidden { display: none !important; }
-        .auth-container {
+        .login-container {
             background-color: var(--light-color);
             padding: 40px;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             text-align: center;
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
         }
-        .auth-container h2 { color: var(--primary-color); margin-bottom: 25px; }
-        .auth-container .form-group { margin-bottom: 20px; text-align: right; }
-        .auth-container input {
+        .login-container h2 { color: var(--primary-color); margin-bottom: 25px; }
+        .login-container .form-group { margin-bottom: 20px; }
+        .login-container input {
             width: 100%;
             padding: 12px;
             border: 1px solid #ccc;
             border-radius: 8px;
             box-sizing: border-box;
+            text-align: center;
             font-size: 16px;
         }
-        .auth-container .btn { width: 100%; margin-bottom: 10px; }
-        .auth-container #auth-error, .auth-container #auth-success {
-            font-weight: 500;
-            min-height: 20px;
-            margin-top: 15px;
-        }
-        #auth-error { color: var(--danger-color); }
-        #auth-success { color: var(--success-color); }
+        .login-container .btn { width: 100%; }
+        #error-message { color: var(--danger-color); margin-top: 15px; font-weight: 500; min-height: 20px; }
         .container {
             width: 100%;
             max-width: 1200px;
@@ -71,7 +66,6 @@
             box-shadow: var(--shadow);
         }
         h1, h2 { color: var(--primary-color); text-align: center; margin-bottom: 30px; }
-        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         #subscriptionForm {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -94,7 +88,7 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(0, 139, 139, 0.15);
         }
-        .form-buttons { grid-column: 1 / -1; display: flex; gap: 10px; }
+        .form-buttons { grid-column: 1 / -1; display: flex; gap: 10px; flex-wrap: wrap; }
         .btn {
             padding: 12px 20px;
             border: none;
@@ -109,8 +103,9 @@
         }
         .btn:hover { opacity: 0.9; transform: translateY(-2px); }
         .btn-submit { background-color: var(--primary-color); }
-        .btn-logout { background-color: var(--danger-color); flex-grow: 0; }
         .btn-secondary { background-color: var(--archive-color); }
+        .btn-export { background-color: var(--success-color); }
+        .btn-import { background-color: var(--info-color); }
         .toolbar { display: flex; justify-content: flex-start; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0; }
         .table-container { overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; }
@@ -134,342 +129,288 @@
         .btn-delete { background-color: var(--danger-color); }
         .btn-archive { background-color: var(--success-color); }
         .btn-unarchive { background-color: var(--info-color); }
-        .btn-gemini { background-color: var(--gemini-color); }
-
-        /* Modal Styles */
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: #fefefe;
-            padding: 20px 30px;
-            border: 1px solid #888;
-            width: 90%;
-            max-width: 500px;
-            border-radius: var(--border-radius);
-            position: relative;
-        }
-        .close-btn {
-            color: #aaa;
-            position: absolute;
-            left: 15px;
-            top: 10px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        #gemini-textarea {
-            width: 100%;
-            height: 150px;
-            margin-top: 15px;
-            margin-bottom: 15px;
-            resize: vertical;
-        }
-        #app-loader {
-            text-align: center;
-            padding: 50px;
-            font-size: 1.2rem;
-            font-weight: 500;
-        }
     </style>
 </head>
 <body>
     
-    <div id="auth-container" class="auth-container">
-        <!-- Auth forms remain the same -->
-        <form id="login-form"><h2>ورود به پنل</h2><div class="form-group"><label for="login-email">ایمیل</label><input type="email" id="login-email" required></div><div class="form-group"><label for="login-password">رمز عبور</label><input type="password" id="login-password" required></div><button type="submit" class="btn btn-submit">ورود</button><p>حساب کاربری ندارید؟ <a href="#" id="show-register">ثبت نام کنید</a></p><p id="auth-error"></p></form><form id="register-form" class="hidden"><h2>ثبت نام</h2><div class="form-group"><label for="register-email">ایمیل</label><input type="email" id="register-email" required></div><div class="form-group"><label for="register-password">رمز عبور (حداقل ۶ کاراکتر)</label><input type="password" id="register-password" required></div><button type="submit" class="btn btn-submit">ثبت نام</button><p>حساب کاربری دارید؟ <a href="#" id="show-login">وارد شوید</a></p><p id="auth-success"></p></form>
+    <div id="login-screen" class="login-container">
+        <h2>ورود به پنل مدیریت</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="password" id="password" placeholder="رمز عبور را وارد کنید" required>
+            </div>
+            <button type="submit" class="btn btn-submit">ورود</button>
+            <p id="error-message"></p>
+        </form>
     </div>
 
     <div class="container hidden" id="main-app">
-        <div id="app-loader">
-            <p>در حال بارگذاری اطلاعات...</p>
+        <h1>📝 مدیریت اشتراک VPN</h1>
+        
+        <form id="subscriptionForm">
+            <input type="hidden" id="editId">
+            <div class="form-group"><label for="customerName">نام مشتری</label><input type="text" id="customerName" required></div>
+            <div class="form-group"><label for="phoneNumber">شماره تماس</label><input type="tel" id="phoneNumber"></div>
+            <div class="form-group"><label for="botUsername">نام کاربری در ربات</label><input type="text" id="botUsername"></div>
+            <div class="form-group"><label for="botName">انتخاب ربات</label><select id="botName"><option value="Lemos">Lemos</option><option value="Sabz">Sabz</option></select></div>
+            <div class="form-group"><label for="subscriptionDate">تاریخ</label><input type="text" id="subscriptionDate" data-jdp required autocomplete="off"></div>
+            <div class="form-group"><label for="subscriptionVolume">حجم اشتراک (GB)</label><input type="number" id="subscriptionVolume" min="1"></div>
+            <div class="form-group" style="grid-column: 1 / -1;"><label for="subscriptionLink">لینک اشتراک</label><input type="url" id="subscriptionLink"></div>
+            <div class="form-buttons"><button type="submit" class="btn btn-submit" id="submitBtn">ثبت اطلاعات</button></div>
+        </form>
+        
+        <div class="form-buttons" style="margin-top: 20px;">
+            <button class="btn btn-secondary" id="toggleArchiveView">🗄️ مشاهده بایگانی</button>
+            <button class="btn btn-export" id="exportBtn">خروجی گرفتن (Export)</button>
+            <button class="btn btn-import" id="importBtn">ورود اطلاعات (Import)</button>
+            <input type="file" id="importFile" class="hidden" accept=".json">
         </div>
 
-        <div id="app-content" class="hidden">
-            <!-- Main app structure remains the same -->
-            <div class="header-controls"><h1>📝 مدیریت اشتراک VPN</h1><button id="logout-btn" class="btn btn-logout">خروج</button></div><form id="subscriptionForm"><input type="hidden" id="editId"><div class="form-group"><label for="customerName">نام مشتری</label><input type="text" id="customerName" required></div><div class="form-group"><label for="phoneNumber">شماره تماس</label><input type="tel" id="phoneNumber"></div><div class="form-group"><label for="botUsername">نام کاربری در ربات</label><input type="text" id="botUsername"></div><div class="form-group"><label for="botName">انتخاب ربات</label><select id="botName"><option value="Lemos">Lemos</option><option value="Sabz">Sabz</option></select></div><div class="form-group"><label for="subscriptionDate">تاریخ</label><input type="text" id="subscriptionDate" data-jdp required autocomplete="off"></div><div class="form-group"><label for="subscriptionVolume">حجم اشتراک (GB)</label><input type="number" id="subscriptionVolume" min="1"></div><div class="form-group" style="grid-column: 1 / -1;"><label for="subscriptionLink">لینک اشتراک</label><input type="url" id="subscriptionLink"></div><div class="form-buttons"><button type="submit" class="btn btn-submit" id="submitBtn">ثبت اطلاعات</button></div></form><div class="form-buttons" style="margin-top: 20px; justify-content: center;"><button class="btn btn-secondary" id="toggleArchiveView">🗄️ مشاهده بایگانی</button></div><div class="toolbar"><div class="form-group"><label for="sortOptions">مرتب‌سازی</label><select id="sortOptions"><option value="createdAt-desc">جدیدترین ثبت</option><option value="createdAt-asc">قدیمی‌ترین ثبت</option><option value="date-desc">جدیدترین اشتراک</option><option value="date-asc">قدیمی‌ترین اشتراک</option></select></div></div><div id="activeSubscriptions"><h2>لیست اشتراک‌های فعال</h2><div class="table-container"><table id="activeTable"><thead><tr><th>نام مشتری</th><th>شماره تماس</th><th>ربات</th><th>تاریخ</th><th>حجم (GB)</th><th>لینک</th><th style="text-align: center;">عملیات</th></tr></thead><tbody id="activeBody"></tbody></table></div></div><div id="archivedSubscriptions" class="hidden"><h2>لیست بایگانی</h2><div class="table-container"><table id="archivedTable"><thead><tr><th>نام مشتری</th><th>شماره تماس</th><th>ربات</th><th>تاریخ</th><th>حجم (GB)</th><th>لینک</th><th style="text-align: center;">عملیات</th></tr></thead><tbody id="archivedBody"></tbody></table></div></div>
+        <div class="toolbar">
+            <div class="form-group"><label for="sortOptions">مرتب‌سازی</label><select id="sortOptions"><option value="id-desc">جدیدترین ثبت</option><option value="id-asc">قدیمی‌ترین ثبت</option><option value="date-desc">جدیدترین اشتراک</option><option value="date-asc">قدیمی‌ترین اشتراک</option></select></div>
+        </div>
+
+        <div id="activeSubscriptions">
+            <h2>لیست اشتراک‌های فعال</h2>
+            <div class="table-container"><table id="activeTable"><thead><tr><th>نام مشتری</th><th>شماره تماس</th><th>ربات</th><th>تاریخ</th><th>حجم (GB)</th><th>لینک</th><th style="text-align: center;">عملیات</th></tr></thead><tbody id="activeBody"></tbody></table></div>
+        </div>
+        
+        <div id="archivedSubscriptions" class="hidden">
+            <h2>لیست بایگانی</h2>
+            <div class="table-container"><table id="archivedTable"><thead><tr><th>نام مشتری</th><th>شماره تماس</th><th>ربات</th><th>تاریخ</th><th>حجم (GB)</th><th>لینک</th><th style="text-align: center;">عملیات</th></tr></thead><tbody id="archivedBody"></tbody></table></div>
         </div>
     </div>
-
-    <!-- Gemini Modal -->
-    <div id="gemini-modal" class="modal hidden">
-        <div class="modal-content">
-            <span id="close-gemini-modal" class="close-btn">&times;</span>
-            <h3>✨ پیام شخصی‌سازی شده</h3>
-            <div id="gemini-loader">
-                <p>در حال ایجاد پیام با هوش مصنوعی...</p>
-            </div>
-            <div id="gemini-result" class="hidden">
-                <textarea id="gemini-textarea" readonly></textarea>
-                <button id="copy-gemini-btn" class="btn btn-submit">کپی کردن متن</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Firebase SDKs (Updated Versions) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
     
     <script>
-        // Firebase configuration from the user
-        const firebaseConfig = {
-          apiKey: "AIzaSyB0SVNq5CWwfkpddE6Lc0550yo-_gsfYgU",
-          authDomain: "myvpnmanager.firebaseapp.com",
-          projectId: "myvpnmanager",
-          storageBucket: "myvpnmanager.firebasestorage.app",
-          messagingSenderId: "1057582190073",
-          appId: "1:1057582190073:web:1090800449575db220c128"
-        };
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- LOGIN LOGIC ---
+            const loginScreen = document.getElementById('login-screen');
+            const mainApp = document.getElementById('main-app');
+            const loginForm = document.getElementById('loginForm');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('error-message');
 
-        // --- Configuration Check ---
-        if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("...")) {
-            document.body.innerHTML = `<div style="text-align: center; padding: 40px; font-family: 'Vazirmatn', sans-serif; color: #2c3e50;"><h1 style="color: #e74c3c;">خطای پیکربندی</h1><p style="font-size: 1.2rem;">اطلاعات اتصال به Firebase در کد برنامه وارد نشده است.</p><p>لطفاً مراحل گفته شده در راهنما را دنبال کرده و اطلاعات <strong>firebaseConfig</strong> خود را در فایل HTML کپی کنید.</p></div>`;
-            throw new Error("Firebase config is missing or incomplete.");
-        }
-
-        // --- Initialize Firebase ---
-        try {
-            firebase.initializeApp(firebaseConfig);
-        } catch (e) {
-            console.error("Firebase initialization failed:", e);
-            alert('خطا در اتصال به فایربیس. لطفاً اطلاعات firebaseConfig را بررسی کنید.');
-        }
-
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // --- DOM Elements ---
-        const authContainer = document.getElementById('auth-container');
-        const mainApp = document.getElementById('main-app');
-        const appLoader = document.getElementById('app-loader');
-        const appContent = document.getElementById('app-content');
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const showLoginLink = document.getElementById('show-login');
-        const showRegisterLink = document.getElementById('show-register');
-        const logoutBtn = document.getElementById('logout-btn');
-        const authError = document.getElementById('auth-error');
-        const authSuccess = document.getElementById('auth-success');
-        const geminiModal = document.getElementById('gemini-modal');
-        const closeGeminiModalBtn = document.getElementById('close-gemini-modal');
-        const geminiLoader = document.getElementById('gemini-loader');
-        const geminiResult = document.getElementById('gemini-result');
-        const geminiTextarea = document.getElementById('gemini-textarea');
-        const copyGeminiBtn = document.getElementById('copy-gemini-btn');
-
-
-        // --- Auth UI Logic ---
-        showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.classList.add('hidden'); registerForm.classList.remove('hidden'); authError.textContent = ''; });
-        showLoginLink.addEventListener('click', (e) => { e.preventDefault(); registerForm.classList.add('hidden'); loginForm.classList.remove('hidden'); authSuccess.textContent = ''; });
-
-        // --- Firebase Auth ---
-        registerForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('register-email').value; const password = document.getElementById('register-password').value; auth.createUserWithEmailAndPassword(email, password).then(userCredential => { authSuccess.textContent = 'ثبت نام موفقیت آمیز بود! اکنون می‌توانید وارد شوید.'; registerForm.reset(); showLoginLink.click(); }).catch(error => { authError.textContent = 'خطا در ثبت نام: ' + error.message; }); });
-        loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; auth.signInWithEmailAndPassword(email, password).catch(error => { authError.textContent = 'ایمیل یا رمز عبور اشتباه است.'; }); });
-        logoutBtn.addEventListener('click', () => { auth.signOut(); });
-
-        // --- Auth State Observer ---
-        auth.onAuthStateChanged(user => { if (user) { authContainer.classList.add('hidden'); mainApp.classList.remove('hidden'); initializeApp(user); } else { mainApp.classList.add('hidden'); authContainer.classList.remove('hidden'); loginForm.reset(); registerForm.reset(); } });
-
-        // --- MAIN APP LOGIC ---
-        function initializeApp(user) {
-            appLoader.classList.remove('hidden');
-            appContent.classList.add('hidden');
-            
-            jalaliDatepicker.startWatch({ time: false, todayButton: true, gotoToday: true });
-
-            const form = document.getElementById('subscriptionForm');
-            const submitBtn = document.getElementById('submitBtn');
-            const editIdInput = document.getElementById('editId');
-            const toggleArchiveViewBtn = document.getElementById('toggleArchiveView');
-            const activeBody = document.getElementById('activeBody');
-            const archivedBody = document.getElementById('archivedBody');
-            const activeContainer = document.getElementById('activeSubscriptions');
-            const archivedContainer = document.getElementById('archivedSubscriptions');
-            const sortOptions = document.getElementById('sortOptions');
-
-            let currentSort = 'createdAt-desc';
-            let subscriptions = [];
-            let archived = [];
-            
-            const subscriptionsRef = db.collection('users').doc(user.uid).collection('subscriptions');
-            const archivedRef = db.collection('users').doc(user.uid).collection('archived');
-            
-            let activeLoaded = false;
-            let archivedLoaded = false;
-
-            const showAppContent = () => {
-                if(activeLoaded && archivedLoaded) {
-                    appLoader.classList.add('hidden');
-                    appContent.classList.remove('hidden');
-                }
-            }
-
-            subscriptionsRef.onSnapshot(snapshot => { subscriptions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); activeLoaded = true; showAppContent(); renderTables(); }, error => console.error("Error listening to active subscriptions: ", error));
-            archivedRef.onSnapshot(snapshot => { archived = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); archivedLoaded = true; showAppContent(); renderTables(); }, error => console.error("Error listening to archived subscriptions: ", error));
-
-            sortOptions.addEventListener('change', (e) => { currentSort = e.target.value; renderTables(); });
-
-            form.addEventListener('submit', (e) => {
+            loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const subscriptionData = { customerName: document.getElementById('customerName').value, phoneNumber: document.getElementById('phoneNumber').value, botUsername: document.getElementById('botUsername').value, botName: document.getElementById('botName').value, subscriptionDate: document.getElementById('subscriptionDate').value, subscriptionLink: document.getElementById('subscriptionLink').value, subscriptionVolume: document.getElementById('subscriptionVolume').value, };
-                const editId = editIdInput.value;
-                if (editId) { subscriptionsRef.doc(editId).update(subscriptionData); submitBtn.textContent = 'ثبت اطلاعات'; submitBtn.style.backgroundColor = 'var(--primary-color)'; editIdInput.value = ''; } else { subscriptionData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); subscriptionsRef.add(subscriptionData); }
-                form.reset();
+                if (passwordInput.value === '4006') {
+                    loginScreen.classList.add('hidden');
+                    mainApp.classList.remove('hidden');
+                    initializeApp();
+                } else {
+                    errorMessage.textContent = 'رمز عبور اشتباه است!';
+                    passwordInput.value = '';
+                }
             });
 
-            toggleArchiveViewBtn.addEventListener('click', () => { archivedContainer.classList.toggle('hidden'); activeContainer.classList.toggle('hidden'); toggleArchiveViewBtn.textContent = archivedContainer.classList.contains('hidden') ? '🗄️ مشاهده بایگانی' : '✅ مشاهده لیست فعال'; });
 
-            // --- Event Delegation for action buttons ---
-            document.body.addEventListener('click', (e) => {
-                const target = e.target.closest('.action-btn');
-                if (!target || !mainApp.contains(target)) return;
-                const id = target.dataset.id;
-                
-                if (target.classList.contains('btn-edit')) handleEdit(id);
-                else if (target.classList.contains('btn-delete')) handleDelete(id, target.dataset.list);
-                else if (target.classList.contains('btn-archive')) handleArchive(id);
-                else if (target.classList.contains('btn-unarchive')) handleUnarchive(id);
-                else if (target.classList.contains('btn-gemini')) handleGenerateMessage(id);
-            });
+            // --- MAIN APP LOGIC ---
+            function initializeApp() {
+                jalaliDatepicker.startWatch({ time: false, todayButton: true, gotoToday: true });
 
-            // --- Gemini Modal Logic ---
-            closeGeminiModalBtn.addEventListener('click', () => geminiModal.classList.add('hidden'));
-            copyGeminiBtn.addEventListener('click', () => {
-                geminiTextarea.select();
-                document.execCommand('copy');
-                copyGeminiBtn.textContent = 'کپی شد!';
-                setTimeout(() => { copyGeminiBtn.textContent = 'کپی کردن متن'; }, 2000);
-            });
+                const form = document.getElementById('subscriptionForm');
+                const submitBtn = document.getElementById('submitBtn');
+                const editIdInput = document.getElementById('editId');
+                const toggleArchiveViewBtn = document.getElementById('toggleArchiveView');
+                const exportBtn = document.getElementById('exportBtn');
+                const importBtn = document.getElementById('importBtn');
+                const importFileInput = document.getElementById('importFile');
+                const activeBody = document.getElementById('activeBody');
+                const archivedBody = document.getElementById('archivedBody');
+                const activeContainer = document.getElementById('activeSubscriptions');
+                const archivedContainer = document.getElementById('archivedSubscriptions');
+                const sortOptions = document.getElementById('sortOptions');
 
-            async function handleGenerateMessage(id) {
-                const sub = subscriptions.find(s => s.id === id);
-                if (!sub) return;
+                let currentSort = 'id-desc';
+                let subscriptions = JSON.parse(localStorage.getItem('vpn_subscriptions_active')) || [];
+                let archived = JSON.parse(localStorage.getItem('vpn_subscriptions_archived')) || [];
 
-                geminiModal.classList.remove('hidden');
-                geminiLoader.classList.remove('hidden');
-                geminiResult.classList.add('hidden');
+                renderTables();
 
-                const prompt = `یک پیام کوتاه، دوستانه و حرفه‌ای به زبان فارسی برای مشتری VPN به نام "${sub.customerName}" بنویس. به او اطلاع بده که اشتراک جدیدش روی ربات "${sub.botName}" فعال شده است. در پایان از خرید او تشکر کن.`;
+                sortOptions.addEventListener('change', (e) => {
+                    currentSort = e.target.value;
+                    renderTables();
+                });
 
-                try {
-                    const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-                    const payload = { contents: chatHistory };
-                    const apiKey = ""; // API key is handled by the environment
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const subscriptionData = {
+                        customerName: document.getElementById('customerName').value,
+                        phoneNumber: document.getElementById('phoneNumber').value,
+                        botUsername: document.getElementById('botUsername').value,
+                        botName: document.getElementById('botName').value,
+                        subscriptionDate: document.getElementById('subscriptionDate').value,
+                        subscriptionLink: document.getElementById('subscriptionLink').value,
+                        subscriptionVolume: document.getElementById('subscriptionVolume').value,
+                    };
                     
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`API request failed with status ${response.status}`);
+                    const editId = editIdInput.value;
+                    if (editId) {
+                        const index = subscriptions.findIndex(sub => sub.id == editId);
+                        if (index !== -1) {
+                            subscriptions[index] = { ...subscriptions[index], ...subscriptionData };
+                        }
+                        submitBtn.textContent = 'ثبت اطلاعات';
+                        submitBtn.style.backgroundColor = 'var(--primary-color)';
+                        editIdInput.value = '';
+                    } else {
+                        subscriptionData.id = Date.now();
+                        subscriptions.push(subscriptionData);
                     }
+                    saveAndRender();
+                    form.reset();
+                });
 
-                    const result = await response.json();
-                    const text = result.candidates[0].content.parts[0].text;
+                toggleArchiveViewBtn.addEventListener('click', () => {
+                    archivedContainer.classList.toggle('hidden');
+                    activeContainer.classList.toggle('hidden');
+                    toggleArchiveViewBtn.textContent = archivedContainer.classList.contains('hidden') ? '🗄️ مشاهده بایگانی' : '✅ مشاهده لیست فعال';
+                });
+
+                exportBtn.addEventListener('click', () => {
+                    const dataToExport = {
+                        active: subscriptions,
+                        archived: archived
+                    };
+                    const dataStr = JSON.stringify(dataToExport, null, 2);
+                    const dataBlob = new Blob([dataStr], {type: "application/json"});
+                    const url = URL.createObjectURL(dataBlob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = url;
+                    const today = new Date().toISOString().slice(0, 10);
+                    downloadLink.download = `vpn_backup_${today}.json`;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    URL.revokeObjectURL(url);
+                });
+
+                importBtn.addEventListener('click', () => {
+                    importFileInput.click();
+                });
+
+                importFileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const importedData = JSON.parse(event.target.result);
+                            if (Array.isArray(importedData.active) && Array.isArray(importedData.archived)) {
+                                if (confirm('آیا از جایگزینی تمام اطلاعات فعلی با اطلاعات جدید اطمینان دارید؟ این عمل غیرقابل بازگشت است.')) {
+                                    subscriptions = importedData.active;
+                                    archived = importedData.archived;
+                                    saveAndRender();
+                                    alert('اطلاعات با موفقیت وارد شد.');
+                                }
+                            } else {
+                                alert('فرمت فایل ورودی صحیح نیست.');
+                            }
+                        } catch (error) {
+                            alert('خطا در خواندن فایل. لطفاً از یک فایل پشتیبان صحیح استفاده کنید.');
+                        } finally {
+                            importFileInput.value = '';
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+
+                document.body.addEventListener('click', (e) => {
+                    const target = e.target.closest('.action-btn');
+                    if (!target || !mainApp.contains(target)) return;
+                    const id = target.dataset.id;
                     
-                    geminiTextarea.value = text;
-                    geminiLoader.classList.add('hidden');
-                    geminiResult.classList.remove('hidden');
+                    if (target.classList.contains('btn-edit')) handleEdit(id);
+                    else if (target.classList.contains('btn-delete')) handleDelete(id, target.dataset.list);
+                    else if (target.classList.contains('btn-archive')) handleArchive(id);
+                    else if (target.classList.contains('btn-unarchive')) handleUnarchive(id);
+                });
 
-                } catch (error) {
-                    console.error("Gemini API error:", error);
-                    geminiTextarea.value = "خطا در ایجاد پیام. لطفاً دوباره تلاش کنید.";
-                    geminiLoader.classList.add('hidden');
-                    geminiResult.classList.remove('hidden');
+                function handleEdit(id) {
+                    const sub = subscriptions.find(s => s.id == id);
+                    if (!sub) return;
+                    document.getElementById('customerName').value = sub.customerName;
+                    document.getElementById('phoneNumber').value = sub.phoneNumber;
+                    document.getElementById('botUsername').value = sub.botUsername;
+                    document.getElementById('botName').value = sub.botName;
+                    document.getElementById('subscriptionDate').value = sub.subscriptionDate;
+                    document.getElementById('subscriptionLink').value = sub.subscriptionLink;
+                    document.getElementById('subscriptionVolume').value = sub.subscriptionVolume;
+                    editIdInput.value = id;
+                    submitBtn.textContent = 'بروزرسانی اطلاعات';
+                    submitBtn.style.backgroundColor = 'var(--warning-color)';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+
+                function handleDelete(id, listType) {
+                    if (confirm('آیا از حذف این اشتراک اطمینان دارید؟')) {
+                        if (listType === 'active') {
+                            subscriptions = subscriptions.filter(s => s.id != id);
+                        } else {
+                            archived = archived.filter(s => s.id != id);
+                        }
+                        saveAndRender();
+                    }
+                }
+
+                function handleArchive(id) {
+                    const index = subscriptions.findIndex(s => s.id == id);
+                    if (index > -1) {
+                        const [item] = subscriptions.splice(index, 1);
+                        archived.push(item);
+                        saveAndRender();
+                    }
+                }
+
+                function handleUnarchive(id) {
+                    const index = archived.findIndex(s => s.id == id);
+                    if (index > -1) {
+                        const [item] = archived.splice(index, 1);
+                        subscriptions.push(item);
+                        saveAndRender();
+                    }
+                }
+
+                function saveAndRender() {
+                    localStorage.setItem('vpn_subscriptions_active', JSON.stringify(subscriptions));
+                    localStorage.setItem('vpn_subscriptions_archived', JSON.stringify(archived));
+                    renderTables();
+                }
+
+                function renderTables() {
+                    const sortArray = (arr, sortType) => {
+                        const sorted = [...arr];
+                        sorted.sort((a, b) => {
+                            if (sortType === 'id-desc') return b.id - a.id;
+                            if (sortType === 'id-asc') return a.id - b.id;
+                            if (sortType === 'date-desc') return (b.subscriptionDate || '').localeCompare(a.subscriptionDate || '');
+                            if (sortType === 'date-asc') return (a.subscriptionDate || '').localeCompare(b.subscriptionDate || '');
+                            return 0;
+                        });
+                        return sorted;
+                    };
+                    activeBody.innerHTML = sortArray(subscriptions, currentSort).map(sub => createRow(sub, 'active')).join('');
+                    archivedBody.innerHTML = sortArray(archived, currentSort).map(sub => createRow(sub, 'archived')).join('');
+                }
+
+                function createRow(sub, type) {
+                    const archiveBtn = type === 'active' ? `<button class="action-btn btn-archive" data-id="${sub.id}">بایگانی</button>` : `<button class="action-btn btn-unarchive" data-id="${sub.id}">بازگردانی</button>`;
+                    const editBtn = type === 'active' ? `<button class="action-btn btn-edit" data-id="${sub.id}">ویرایش</button>` : '';
+                    return `
+                        <tr>
+                            <td>${sub.customerName || '-'}</td>
+                            <td>${sub.phoneNumber || '-'}</td>
+                            <td>${sub.botName || '-'}</td>
+                            <td>${sub.subscriptionDate || '-'}</td>
+                            <td>${sub.subscriptionVolume ? sub.subscriptionVolume + ' GB' : '-'}</td>
+                            <td class="link-cell">${sub.subscriptionLink ? `<a href="${sub.subscriptionLink}" target="_blank">${sub.subscriptionLink}</a>` : '-'}</td>
+                            <td class="actions">${editBtn}<button class="action-btn btn-delete" data-id="${sub.id}" data-list="${type}">حذف</button>${archiveBtn}</td>
+                        </tr>`;
                 }
             }
-
-            function handleEdit(id) {
-                const sub = subscriptions.find(s => s.id === id);
-                if (!sub) return;
-                document.getElementById('customerName').value = sub.customerName;
-                document.getElementById('phoneNumber').value = sub.phoneNumber;
-                document.getElementById('botUsername').value = sub.botUsername;
-                document.getElementById('botName').value = sub.botName;
-                document.getElementById('subscriptionDate').value = sub.subscriptionDate;
-                document.getElementById('subscriptionLink').value = sub.subscriptionLink;
-                document.getElementById('subscriptionVolume').value = sub.subscriptionVolume;
-                editIdInput.value = id;
-                submitBtn.textContent = 'بروزرسانی اطلاعات';
-                submitBtn.style.backgroundColor = 'var(--warning-color)';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-
-            function handleDelete(id, listType) {
-                if (confirm('آیا از حذف این اشتراک اطمینان دارید؟')) {
-                    const ref = listType === 'active' ? subscriptionsRef : archivedRef;
-                    ref.doc(id).delete();
-                }
-            }
-
-            function handleArchive(id) {
-                const docRef = subscriptionsRef.doc(id);
-                docRef.get().then(doc => {
-                    if (doc.exists) {
-                        archivedRef.doc(id).set(doc.data());
-                        docRef.delete();
-                    }
-                });
-            }
-
-            function handleUnarchive(id) {
-                const docRef = archivedRef.doc(id);
-                docRef.get().then(doc => {
-                    if (doc.exists) {
-                        subscriptionsRef.doc(id).set(doc.data());
-                        docRef.delete();
-                    }
-                });
-            }
-
-            function renderTables() {
-                const sortArray = (arr, sortType) => {
-                    const sorted = [...arr];
-                    sorted.sort((a, b) => {
-                        if (sortType === 'createdAt-desc') return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
-                        if (sortType === 'createdAt-asc') return (a.createdAt?.toMillis() || 0) - (b.createdAt?.toMillis() || 0);
-                        if (sortType === 'date-desc') return (b.subscriptionDate || '').localeCompare(a.subscriptionDate || '');
-                        if (sortType === 'date-asc') return (a.subscriptionDate || '').localeCompare(b.subscriptionDate || '');
-                        return 0;
-                    });
-                    return sorted;
-                };
-                activeBody.innerHTML = sortArray(subscriptions, currentSort).map(sub => createRow(sub, 'active')).join('');
-                archivedBody.innerHTML = sortArray(archived, currentSort).map(sub => createRow(sub, 'archived')).join('');
-            }
-
-            function createRow(sub, type) {
-                const archiveBtn = type === 'active' ? `<button class="action-btn btn-archive" data-id="${sub.id}">بایگانی</button>` : `<button class="action-btn btn-unarchive" data-id="${sub.id}">بازگردانی</button>`;
-                const editBtn = type === 'active' ? `<button class="action-btn btn-edit" data-id="${sub.id}">ویرایش</button>` : '';
-                const geminiBtn = type === 'active' ? `<button class="action-btn btn-gemini" data-id="${sub.id}">✨ ایجاد پیام</button>` : '';
-                return `
-                    <tr>
-                        <td>${sub.customerName || '-'}</td>
-                        <td>${sub.phoneNumber || '-'}</td>
-                        <td>${sub.botName || '-'}</td>
-                        <td>${sub.subscriptionDate || '-'}</td>
-                        <td>${sub.subscriptionVolume ? sub.subscriptionVolume + ' GB' : '-'}</td>
-                        <td class="link-cell">${sub.subscriptionLink ? `<a href="${sub.subscriptionLink}" target="_blank">${sub.subscriptionLink}</a>` : '-'}</td>
-                        <td class="actions">${geminiBtn}${editBtn}<button class="action-btn btn-delete" data-id="${sub.id}" data-list="${type}">حذف</button>${archiveBtn}</td>
-                    </tr>`;
-            }
-        }
+        });
     </script>
 </body>
 </html>
